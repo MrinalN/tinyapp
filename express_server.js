@@ -20,7 +20,6 @@ function generateRandomString() {
   return result;
 }
 
-
 app.get("/", (req, res) => {
   res.send("Hello!")
 });
