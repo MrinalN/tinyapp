@@ -23,7 +23,8 @@
     </div>
     <div class="card-footer text-muted">
       <h1>Edit</h1>
-      <form method="POST" action="/urls/<%= shortURL %>"></form>
+      
+      <form method="POST" action="/urls/<%= shortURL %>">
         
         <label for="longURL">New Url:</label>
         <input 
@@ -35,9 +36,10 @@
         <button type="submit" class="btn btn-primary btn-sm">
           Submit
         </button>
+      </form>
     </div>
   </div>
-  </form>
+
   <!-- Bootstrap JS -->
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
     integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
