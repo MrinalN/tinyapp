@@ -6,12 +6,13 @@ const PORT = 8080;
 app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
 
+//IN MEMORY
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
 
-
+//HELPER FUNCTIONS
 function generateRandomString() {
   let result = "";
   const characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -25,6 +26,7 @@ const updateUrlDatabase = (shortURL, content) => {
   urlDatabase[shortURL] = content;
 };
 
+//END POINTS OR ROUTES
 
 app.get("/", (req, res) => {
   res.send("Hello!");
