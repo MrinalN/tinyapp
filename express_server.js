@@ -48,6 +48,11 @@ app.post("/logout", (req, res) => {
   res.redirect("/urls");
 });
 
+app.get("/register", (req, res) => {
+  const templateVars = {"username":req.body.username};
+  res.render("register", templateVars);
+});
+
 app.get("/urls", (req, res) => {
   const templateVars = {
     urls: urlDatabase,
@@ -70,7 +75,7 @@ app.get("/u/:shortURL", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   const templateVars = {
-    username: req.cookies["username"];
+    username: req.cookies["username"]
   }
   res.render("urls_new", templateVars);
 });
