@@ -43,7 +43,7 @@ app.post("/login", (req, res) => {
 });
 
 app.post("/logout", (req, res) => {
-  const templateVars = {"username":req.body.username}
+  const templateVars = {"username":req.body.username};
   res.clearCookie("username", templateVars);
   res.redirect("/urls");
 });
@@ -70,7 +70,7 @@ app.get("/u/:shortURL", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   const templateVars = {
-    username: req.cookies["username"]
+    username: req.cookies["username"];
   }
   res.render("urls_new", templateVars);
 });
