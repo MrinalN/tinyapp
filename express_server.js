@@ -1,7 +1,10 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const cookie = require('cookie');
+//const cookie = require('cookie');
+const cookieParser = require("cookie-parser");
+
 const app = express();
+app.use(cookieParser());
 
 const PORT = 8080;
 
@@ -36,7 +39,6 @@ app.get("/", (req, res) => {
 
 app.post("/login", (req, res) => {
   res.cookie("username", req.body.username);
-  //console.log("REQ BOD", req.body.username) testing
   res.redirect("/urls");
 });
 
