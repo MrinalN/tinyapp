@@ -14,8 +14,11 @@
     </div>
     <% if (user) { %>
        <span class="navbar-text">
-        <a class="nav-item nav-link">Logged in as: <%= user.email %></a>
+        <a class="nav-item nav-link">Hi, <%= user.email %></a>
       </span>
+
+      <h3>||</h3>
+
       <form class="form-inline" method="POST" action="/logout">
           <button type="submit" class="btn btn-outline-dark">
             Logout
@@ -24,12 +27,22 @@
       <% } else { %>
         <form class="form-inline" method="POST" action="/login">
           <div class="form-group">
-            <input class=form-control style="margin:1em;" type="text" name="email" placeholder="Email">
             <button type="submit" class="btn btn-outline-dark">
               Login
             </button>
           </div>
         </form>
+
+        <h3>||</h3>
+
+        <form class="form-inline" method="POST" action="/register">
+          <div class="form-group">
+            <button type="submit" class="btn btn-outline-dark">
+              Register
+            </button>
+          </div>
+        </form>
+
         <% } %>
   </nav>
 </header>
