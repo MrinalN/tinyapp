@@ -1,6 +1,5 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-//const cookie = require('cookie');
 const cookieParser = require("cookie-parser");
 
 const app = express();
@@ -54,10 +53,25 @@ const findUserByEmail = (email) => {
       return userObj;
     }
   }
-
   // if not found return false
   return false;
 };
+
+const findUserID = (email, password) => {
+  for (let user in users) {
+    const userObj = users[user];
+
+    if (userObj.email === email && userObj.password === password) {
+      // if found return the user
+      return userObj;
+    }
+  }
+  // if not found return false
+  return false;
+  
+}
+
+
 //END POINTS OR ROUTES
 
 //basic homepage (choice to redirect to urls instead)
@@ -68,9 +82,43 @@ app.get("/", (req, res) => {
 
 //collects info from login bar, sets email cookie
 app.post("/login", (req, res) => {
-  const templateVars = { "user_id": req.body.email };
-  res.cookie("user_id", templateVars);
+  const { email, password } = req.body;
+  const foundEmail = findUserByEmail(email);
+  const foundUser = findUserID(email, password);
+  
+  if(foundEmail && !foundUser) {
+    res.status(403).send('Email found. Password incorrect.')
+  } else if (!foundEmail) {
+    res.status(403).send('Email not found. Register please.')
+  }
+
+  if(!foundUser) {
+    res.status(403).send('Not listed. Register please.')
+  }
+
+  for(let userID in users) {
+    const userDbEmail = users[userID].email;
+    if( userDbEmail === email) {
+      res.cookie('user_id',userID);
+    }
+   }
+
+
+  // const templateVars = { "user_id": req.body.email };
+  // res.cookie("user_id", templateVars);
+
+  //set the user_id cookie with the matching user's random ID
+  //*GUESS** userID = req.cookies['user_id']
+
   res.redirect("/urls");
+});
+
+app.get("/login", (req, res) => {
+  userID = req.cookies['user_id']
+  const templateVars = {
+    user: users[userID],
+  }
+  res.render("login", templateVars);
 });
 
 //deletes email cookie
@@ -83,13 +131,6 @@ app.post("/logout", (req, res) => {
   res.redirect("/urls");
 });
 
-app.get("/login", (req, res) => {
-  userID = req.cookies['user_id']
-  const templateVars = {
-    user: users[userID],
-  }
-  res.render("login", templateVars);
-});
 
 //takes in info from registration input, renders to register.ejs
 app.get("/register", (req, res) => {
