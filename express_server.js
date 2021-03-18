@@ -41,10 +41,16 @@ const generateRandomString = () => {
 
 //used in /urls/:shortURL POST
 const updateUrlDatabase = (shortURL, content, id) => {
-  urlDatabase[shortURL] = {
-    longURL: content,
-    userID: id,
+  for(let id in urlDatabase){
+    if(urlDatabase[id].longURL !== content) {
+      urlDatabase[shortURL] = {
+        longURL: content,
+        userID: id,
+      }
+
+    }
   }
+  //does it need if conditional if duplicate? <not working>
 };
 
 const findUserByEmail = (email) => {
@@ -174,25 +180,30 @@ app.get("/urls", (req, res) => {
 });
 
 ////!!! MAY BE AFFECTED !!! 
+//ROUTE /urls to /urls/${shortURL}. Updates database.
 app.post("/urls", (req, res) => {
+  const userID = req.cookies['user_id'];
   let longURL = req.body["longURL"];
   let shortURL = generateRandomString();
 
-  urlDatabase[shortURL] = {
-    longURL,
-  }///
+  updateUrlDatabase(shortURL, longURL, userID);
+  // urlDatabase[shortURL] = {
+  //   longURL,
+  // }/// update should be happening here
 
   res.redirect(`/urls/${shortURL}`);
 });
 
 //!!! MAY BE AFFECTED !!!
-//redirects to external website using longURL
+//ROUTE to external website using longURL link
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL].longURL;///BUG undefined.longURL
+  const longURL = urlDatabase[req.params.shortURL].longURL;
   res.redirect(longURL);
 });
 
 //!!! MAY BE AFFECTED !!!
+//determines access to urls/new (if no, reroute)
+// hangs onto user id for header, renders to register.ejs
 app.get("/urls/new", (req, res) => {
   const userID = req.cookies['user_id'];
   if(!userID) {
@@ -214,20 +225,21 @@ app.get("/urls/:shortURL", (req, res) => {
   console.log(urlDatabase)
   const templateVars = {
     shortURL: req.params.shortURL,
-    //longURL: urlDatabase[req.params.shortURL].longURL,// BUG undefined.longURL atm
+    longURL: urlDatabase[req.params.shortURL].longURL,
     user: users[userID]
   };
   //console.log(templateVars[longURL])
   res.render("urls_show", templateVars);
-  //value="<%= longURL %> ">
 });
 
 //!!! MAY BE AFFECTED !!!
+//ROUTE urls/:shortURL to /urls. Updating database too. (duplicate?)
 app.post('/urls/:shortURL', (req, res) => {
   const userID = req.cookies['user_id'];
   const shortURL = req.params.shortURL;
   const longURLContent = req.body.longURLContent;
   updateUrlDatabase(shortURL, longURLContent, userID);
+  console.log(urlDatabase); //testing if duplicated...
   res.redirect('/urls');
 });
 

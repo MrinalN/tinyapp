@@ -15,9 +15,9 @@
   <div class="card text-center">
     <div class="card-header"></div>
     <div class="card-body">
-      <h5 class="card-title">TinyURL for: *
+      <h5 class="card-title">TinyURL for: <%= longURL %> 
       </h5>
-      <p class="card-text">Short URL: <a href="<%= shortURL %> ">
+      <p class="card-text">Short URL: <a href="<%= longURL %> ">
           <%= shortURL %>
         </a></p>
     </div>
@@ -31,6 +31,7 @@
           type="text" 
           name="longURLContent" 
           id="longURL" 
+          value="<%= longURL %> "
         >
 
         <button type="submit" class="btn btn-primary btn-sm">
