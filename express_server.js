@@ -41,14 +41,11 @@ const generateRandomString = () => {
 
 //used in /urls/:shortURL POST
 const updateUrlDatabase = (shortURL, content, id) => {
-  for (let id in urlDatabase) {
-    if (urlDatabase[id].longURL !== content) {
-      urlDatabase[shortURL] = {
-        longURL: content,
-        userID: id,
-      }
 
-    }
+    urlDatabase[shortURL] = {
+        shortURL,
+        longURL: content,
+        userID: id
   }
   //does it need if conditional if duplicate? <not working>
 };
@@ -58,23 +55,22 @@ const urlsForUser = (id) => {
   for (let shortURL in urlDatabase) {
     
     if (urlDatabase[shortURL].userID === id) {
-      userObj[shortURL] = urlDatabase[shortURL]
- 
-        // longURL: urlDatabase[shortURL].longURL,
-        // userID: id
-
-      
+      userObj[shortURL] = urlDatabase[shortURL]     
     }
-    
   }
  return userObj
-  //if urlsDatabse userID === logged in userID
-  //return their urls 
-
   //returns the URLs where the userID is equal to the id of the currently logged-in user
 
   //ACTIVATE in /urls GET
 };
+
+const getUserByUrl = (shortURL) => {
+  for(let url in urlDatabase) {
+    if(url === shortURL) {
+      return urlDatabase[url].userID
+    }
+  }
+ };
 
 const findUserByEmail = (email) => {
   for (let user in users) {
@@ -210,21 +206,32 @@ app.get("/urls", (req, res) => {
   }
 });
 
+app.get('/urls.json', (req, res) => {
+  res.json(urlDatabase);
+});
+
 ////!!! MAY BE AFFECTED !!! 
 //ROUTE /urls to /urls/${shortURL}. Updates database.
 app.post("/urls", (req, res) => {
   const userID = req.cookies['user_id'];
+  if (!userID) {
+    //reroute to login page
+    res.redirect('/login');
+  } else {
   let longURL = req.body["longURL"];
   let shortURL = generateRandomString();
 
   updateUrlDatabase(shortURL, longURL, userID);
+  //console.log(urlDatabase)
 
   res.redirect(`/urls/${shortURL}`);
+  }
 });
 
 //!!! MAY BE AFFECTED !!!
-//ROUTE to external website using longURL link
+//ROUTE to external website using longURL link!!
 app.get("/u/:shortURL", (req, res) => {
+  const userID = req.cookies['user_id'];
   const longURL = urlDatabase[req.params.shortURL].longURL;
   res.redirect(longURL);
 });
@@ -246,11 +253,16 @@ app.get("/urls/new", (req, res) => {
 
 });
 
-//!!! MAY BE AFFECTED !!!
-//data rendered to urls_show.ejs
+//PRIVATE data rendered to urls_show.ejs!!
 app.get("/urls/:shortURL", (req, res) => {
   const userID = req.cookies['user_id'];
-  console.log(urlDatabase)
+  const user = getUserByUrl(req.params.shortURL);
+  if (!userID) {
+    //reroute to login page
+    res.redirect('/login');
+  } else if (user === undefined || user !== userID) {
+    res.status(400).send('No access! Doesn\'t Belong To You!');
+  } else {
   const templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL].longURL,
@@ -258,23 +270,41 @@ app.get("/urls/:shortURL", (req, res) => {
   };
   //console.log(templateVars[longURL])
   res.render("urls_show", templateVars);
+}
 });
 
 //!!! MAY BE AFFECTED !!!
-//ROUTE urls/:shortURL to /urls. Updating database too. (duplicate?)
+//ROUTE urls/:shortURL to /urls.
 app.post('/urls/:shortURL', (req, res) => {
-  const userID = req.cookies['user_id'];
   const shortURL = req.params.shortURL;
   const longURLContent = req.body.longURLContent;
+  const userID = req.cookies['user_id'];
+  const user = getUserByUrl(shortURL);
+  if (!userID) {
+    //reroute to login page
+    res.redirect('/login');
+  } else if (user === undefined || user !== userID) {
+    res.status(400).send('No access! Doesn\'t Belong To You!');
+  } else {
   updateUrlDatabase(shortURL, longURLContent, userID);
   console.log(urlDatabase); //testing if duplicated...
   res.redirect('/urls');
+  }
 });
 
 //deletes url from database. Routes back to /urls
 app.post("/urls/:shortURL/delete", (req, res) => {
+  const userID = req.cookies['user_id'];
+  const user = getUserByUrl(req.params.shortURL);
+  if (!userID) {
+    //reroute to login page
+    res.redirect('/login');
+  } else if (user === undefined || user !== userID) {
+    res.status(400).send('No access! Doesn\'t Belong To You!');
+  } else {
   delete urlDatabase[req.params.shortURL];
   res.redirect("/urls");
+  }
 });
 
 app.get("/hello", (req, res) => {
@@ -285,27 +315,3 @@ app.get("/hello", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
-
-
-
-
-
-// <!-- <% if(!userDB) { %>
-//   <p>These URLs do not belong to you</p>
-//   <tr>
-//     <td>
-//       <% for (let id in urlsDB) { %>
-//       <%= urlsDB[id] %>
-//     </td>
-//     <td>
-//       <%= urlsDB[id].longURL %>
-//     </td>
-//     <% } %>
-//     <td>
-//       Edit 
-//     </td>
-//     <td>
-//       Delete
-//     </td>
-//   </tr>
-//   <% } else {%> -->
