@@ -1,11 +1,18 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const cookieParser = require("cookie-parser");
+//const cookieParser = require("cookie-parser");
+const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 
 const app = express();
-app.use(cookieParser());
+//app.use(cookieParser());
+app.use(
+  cookieSession({
+    name: 'session',
+    keys: ['key1', 'key2'],
+  })
+);
 
 const PORT = 8080;
 
@@ -109,7 +116,7 @@ app.get("/", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-  const userID = req.cookies['user_id'];
+  const userID = req.session['user_id'];//JUST CHANGED FROM req.cookie
   const templateVars = {
     user: users[userID],
   };
@@ -135,7 +142,8 @@ app.post("/login", (req, res) => {
   for (let userID in users) {
     const userDbEmail = users[userID].email;
     if (userDbEmail === email) {
-      res.cookie('user_id', userID);
+      req.session['user_id'] = userID;//JUST CHANGED 
+      //res.cookie('user_id', userID);//??
     }
   }
   res.redirect("/urls");
@@ -143,19 +151,23 @@ app.post("/login", (req, res) => {
 
 //deletes email cookie
 app.post("/logout", (req, res) => {
-  const userID = req.cookies['user_id'];
-  const templateVars = {
-    user: users[userID],
-  };
-  res.clearCookie("user_id", templateVars);
-  res.redirect("/urls");
-  console.log(userID)
-  console.log(users)//testing
+  // const userID = req.session['user_id'];//JUST CHANGED FROM req.cookie
+  // //const userID = req.cookies['user_id'];
+  // const templateVars = {
+  //   user: users[userID],
+  // };
+  //res.clearCookie("user_id", templateVars);
+  req.session = null;
+  res.redirect('/login');
+  //res.redirect("/urls");
+  //console.log(userID)
+  //console.log(users)//testing
 });
 
 //takes in info from registration input, renders to register.ejs
 app.get("/register", (req, res) => {
-  const userID = req.cookies['user_id'];
+  const userID = req.session['user_id'];//JUST CHANGED FROM req.cookie
+  //const userID = req.cookies['user_id'];
   const templateVars = {
     user: users[userID],
   };
@@ -181,8 +193,9 @@ app.post("/register", (req, res) => {
       email,
       password: bcrypt.hashSync(password, saltRounds)
     };
-    console.log(users);
-    res.cookie("user_id", id);
+    //console.log(users);
+    req.session['user_id'] = id;//JUST CHANGED 
+    //res.cookie("user_id", id);
     res.redirect("/urls");
   } else {
     //console.log(users);
@@ -193,7 +206,8 @@ app.post("/register", (req, res) => {
 //!!! MAY BE AFFECTED !!! <working>
 //takes in info from registration input, renders to register.ejs
 app.get("/urls", (req, res) => {
-  const userID = req.cookies['user_id'];
+  const userID = req.session['user_id'];//JUST CHANGED FROM req.cookie
+  //const userID = req.cookies['user_id'];
   if (!userID) {
     //reroute to login page
     res.redirect('/login');
@@ -216,7 +230,8 @@ app.get('/urls.json', (req, res) => {
 ////!!! MAY BE AFFECTED !!! 
 //ROUTE /urls to /urls/${shortURL}. Updates database.
 app.post("/urls", (req, res) => {
-  const userID = req.cookies['user_id'];
+  const userID = req.session['user_id'];//JUST CHANGED FROM req.cookie
+  //const userID = req.cookies['user_id'];
   if (!userID) {
     //reroute to login page
     res.redirect('/login');
@@ -234,7 +249,8 @@ app.post("/urls", (req, res) => {
 //!!! MAY BE AFFECTED !!!
 //ROUTE to external website using longURL link!!
 app.get("/u/:shortURL", (req, res) => {
-  const userID = req.cookies['user_id'];
+  const userID = req.session['user_id'];//JUST CHANGED FROM req.cookie
+  //const userID = req.cookies['user_id'];
   const longURL = urlDatabase[req.params.shortURL].longURL;
   res.redirect(longURL);
 });
@@ -243,7 +259,8 @@ app.get("/u/:shortURL", (req, res) => {
 //determines access to urls/new (if no, reroute)
 // hangs onto user id for header, renders to register.ejs
 app.get("/urls/new", (req, res) => {
-  const userID = req.cookies['user_id'];
+  const userID = req.session['user_id'];//JUST CHANGED FROM req.cookie
+  //const userID = req.cookies['user_id'];
   if (!userID) {
     //reroute to login page
     res.redirect('/login');
@@ -258,7 +275,8 @@ app.get("/urls/new", (req, res) => {
 
 //PRIVATE data rendered to urls_show.ejs!!
 app.get("/urls/:shortURL", (req, res) => {
-  const userID = req.cookies['user_id'];
+  const userID = req.session['user_id'];//JUST CHANGED FROM req.cookie
+  //const userID = req.cookies['user_id'];
   const user = getUserByUrl(req.params.shortURL);
   if (!userID) {
     //reroute to login page
@@ -281,7 +299,8 @@ app.get("/urls/:shortURL", (req, res) => {
 app.post('/urls/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
   const longURLContent = req.body.longURLContent;
-  const userID = req.cookies['user_id'];
+  const userID = req.session['user_id'];//JUST CHANGED FROM req.cookie
+  //const userID = req.cookies['user_id'];
   const user = getUserByUrl(shortURL);
   if (!userID) {
     //reroute to login page
@@ -297,7 +316,8 @@ app.post('/urls/:shortURL', (req, res) => {
 
 //deletes url from database. Routes back to /urls
 app.post("/urls/:shortURL/delete", (req, res) => {
-  const userID = req.cookies['user_id'];
+  const userID = req.session['user_id'];//JUST CHANGED FROM req.cookie
+  //const userID = req.cookies['user_id'];
   const user = getUserByUrl(req.params.shortURL);
   if (!userID) {
     //reroute to login page
