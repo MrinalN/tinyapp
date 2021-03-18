@@ -27,6 +27,24 @@
         </tr>
       </thead>
       <tbody>
+        <% if(!urlsDB) { %>
+          <p>These URLs do not belong to you</p>
+          <tr>
+            <td>
+              <%= shortURL %>
+            </td>
+            <td>
+              <%= urlsDB[shortURL].longURL %>
+            </td>
+            <td>
+              Can't Edit
+            </td>
+            <td>
+              Can't Delete
+            </td>
+          </tr>
+          <% } %>
+
         <% for(let shortURL in urlsDB) { %>
           <tr>
             <td>

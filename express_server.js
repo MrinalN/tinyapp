@@ -12,8 +12,8 @@ app.set("view engine", "ejs");
 
 //IN MEMORY
 const urlDatabase = {
-  "b2xVn2": {longURL:"http://www.lighthouselabs.ca", userID: "default"},
-  "9sm5xK": {longURL:"http://www.google.com", userID: "default"}
+  "b2xVn2": { longURL: "http://www.lighthouselabs.ca", userID: "userRandomID" },
+  "9sm5xK": { longURL: "http://www.google.com", userID: "userRandomID" }
 };
 
 const users = {
@@ -41,8 +41,8 @@ const generateRandomString = () => {
 
 //used in /urls/:shortURL POST
 const updateUrlDatabase = (shortURL, content, id) => {
-  for(let id in urlDatabase){
-    if(urlDatabase[id].longURL !== content) {
+  for (let id in urlDatabase) {
+    if (urlDatabase[id].longURL !== content) {
       urlDatabase[shortURL] = {
         longURL: content,
         userID: id,
@@ -51,6 +51,21 @@ const updateUrlDatabase = (shortURL, content, id) => {
     }
   }
   //does it need if conditional if duplicate? <not working>
+};
+
+const urlsForUser = (id) => {
+  for (let shortURL in urlDatabase) {
+    if (urlDatabase[shortURL].userID === id) {
+      return urlDatabase[shortURL].longURL
+    }
+  } 
+  return false;
+  //if urlsDatabse userID === logged in userID
+  //return their urls 
+
+  //returns the URLs where the userID is equal to the id of the currently logged-in user
+
+  //ACTIVATE in /urls GET
 };
 
 const findUserByEmail = (email) => {
@@ -77,7 +92,7 @@ const findUserID = (email, password) => {
   }
   // if not found return false
   return false;
-  
+
 };
 
 
@@ -102,7 +117,7 @@ app.post("/login", (req, res) => {
   const { email, password } = req.body;
   const foundEmail = findUserByEmail(email);
   const foundUser = findUserID(email, password);
-  
+
   if (foundEmail && !foundUser) {
     res.status(403).send('Email found. Password incorrect.');
   } else if (!foundEmail) {
@@ -116,7 +131,7 @@ app.post("/login", (req, res) => {
   for (let userID in users) {
     const userDbEmail = users[userID].email;
     if (userDbEmail === email) {
-      res.cookie('user_id',userID);
+      res.cookie('user_id', userID);
     }
   }
   res.redirect("/urls");
@@ -172,11 +187,18 @@ app.post("/register", (req, res) => {
 //takes in info from registration input, renders to register.ejs
 app.get("/urls", (req, res) => {
   const userID = req.cookies['user_id'];
-  const templateVars = {
-    urlsDB: urlDatabase,
-    user: users[userID]
-  };
-  res.render("urls_index", templateVars);
+  if (!userID) {
+    //reroute to login page
+    res.redirect('/login');
+  } else {
+    const userDB = urlsForUser(userID);
+    const templateVars = {
+      userDB,
+      urlsDB: urlDatabase,
+      user: users[userID]
+    };
+    res.render("urls_index", templateVars);
+  }
 });
 
 ////!!! MAY BE AFFECTED !!! 
@@ -187,9 +209,6 @@ app.post("/urls", (req, res) => {
   let shortURL = generateRandomString();
 
   updateUrlDatabase(shortURL, longURL, userID);
-  // urlDatabase[shortURL] = {
-  //   longURL,
-  // }/// update should be happening here
 
   res.redirect(`/urls/${shortURL}`);
 });
@@ -206,14 +225,14 @@ app.get("/u/:shortURL", (req, res) => {
 // hangs onto user id for header, renders to register.ejs
 app.get("/urls/new", (req, res) => {
   const userID = req.cookies['user_id'];
-  if(!userID) {
+  if (!userID) {
     //reroute to login page
     res.redirect('/login');
   } else {
-      const templateVars = {
-    user: users[userID],
-  };
-  res.render("urls_new", templateVars);
+    const templateVars = {
+      user: users[userID],
+    };
+    res.render("urls_new", templateVars);
   }
 
 });
@@ -243,7 +262,7 @@ app.post('/urls/:shortURL', (req, res) => {
   res.redirect('/urls');
 });
 
-//!!! MAY BE AFFECTED !!! <worked>
+//deletes url from database. Routes back to /urls
 app.post("/urls/:shortURL/delete", (req, res) => {
   delete urlDatabase[req.params.shortURL];
   res.redirect("/urls");
