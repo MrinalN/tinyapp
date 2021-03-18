@@ -39,8 +39,12 @@ const generateRandomString = () => {
   return result;
 };
 
-const updateUrlDatabase = (shortURL, content) => {
-  urlDatabase[shortURL] = content;
+//used in /urls/:shortURL POST
+const updateUrlDatabase = (shortURL, content, id) => {
+  urlDatabase[shortURL] = {
+    longURL: content,
+    userID: id,
+  }
 };
 
 const findUserByEmail = (email) => {
@@ -158,7 +162,7 @@ app.post("/register", (req, res) => {
   }
 });
 
-//!!! MAY BE AFFECTED !!!
+//!!! MAY BE AFFECTED !!! <working>
 //takes in info from registration input, renders to register.ejs
 app.get("/urls", (req, res) => {
   const userID = req.cookies['user_id'];
@@ -169,17 +173,21 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
-////!!! MAY BE AFFECTED !!!
+////!!! MAY BE AFFECTED !!! 
 app.post("/urls", (req, res) => {
   let longURL = req.body["longURL"];
   let shortURL = generateRandomString();
-  urlDatabase[shortURL] = longURL;
+
+  urlDatabase[shortURL] = {
+    longURL,
+  }///
+
   res.redirect(`/urls/${shortURL}`);
 });
 
 //!!! MAY BE AFFECTED !!!
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL];
+  const longURL = urlDatabase[req.params.shortURL].longURL;///
   res.redirect(longURL);
 });
 
@@ -203,7 +211,7 @@ app.get("/urls/:shortURL", (req, res) => {
   const userID = req.cookies['user_id'];
   const templateVars = {
     shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL],
+    longURL: urlDatabase[req.params.shortURL].longURL,
     user: users[userID]
   };
   res.render("urls_show", templateVars);
@@ -211,9 +219,10 @@ app.get("/urls/:shortURL", (req, res) => {
 
 //!!! MAY BE AFFECTED !!!
 app.post('/urls/:shortURL', (req, res) => {
+  const userID = req.cookies['user_id'];
   const shortURL = req.params.shortURL;
   const longURLContent = req.body.longURLContent;
-  updateUrlDatabase(shortURL, longURLContent);
+  updateUrlDatabase(shortURL, longURLContent, userID);
   res.redirect('/urls');
 });
 
