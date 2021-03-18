@@ -2,7 +2,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 //const cookieParser = require("cookie-parser");
 const cookieSession = require('cookie-session');
-const findUserByEmail = require('./helpers');
+const findUserByEmail = require('./helpers.js').findUserByEmail;
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 
