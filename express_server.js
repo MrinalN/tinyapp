@@ -44,7 +44,6 @@ const updateUrlDatabase = (shortURL, content) => {
 };
 
 const findUserByEmail = (email) => {
-  // loop and try to match the email
   for (let user in users) {
     const userObj = users[user];
 
@@ -76,8 +75,16 @@ const findUserID = (email, password) => {
 
 //basic homepage (choice to redirect to urls instead)
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  //res.send("Hello!"); //they asked you to put this in.
   res.redirect("/urls");
+});
+
+app.get("/login", (req, res) => {
+  userID = req.cookies['user_id']
+  const templateVars = {
+    user: users[userID],
+  }
+  res.render("login", templateVars);
 });
 
 //collects info from login bar, sets email cookie
@@ -102,24 +109,10 @@ app.post("/login", (req, res) => {
       res.cookie('user_id',userID);
     }
    }
-
-
-  // const templateVars = { "user_id": req.body.email };
-  // res.cookie("user_id", templateVars);
-
-  //set the user_id cookie with the matching user's random ID
-  //*GUESS** userID = req.cookies['user_id']
-
   res.redirect("/urls");
 });
 
-app.get("/login", (req, res) => {
-  userID = req.cookies['user_id']
-  const templateVars = {
-    user: users[userID],
-  }
-  res.render("login", templateVars);
-});
+
 
 //deletes email cookie
 app.post("/logout", (req, res) => {
