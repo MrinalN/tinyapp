@@ -12,8 +12,8 @@ app.set("view engine", "ejs");
 
 //IN MEMORY
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "b2xVn2": {longURL:"http://www.lighthouselabs.ca", userID: "default"},
+  "9sm5xK": {longURL:"http://www.google.com", userID: "default"}
 };
 
 const users = {
@@ -112,8 +112,6 @@ app.post("/login", (req, res) => {
   res.redirect("/urls");
 });
 
-
-
 //deletes email cookie
 app.post("/logout", (req, res) => {
   const userID = req.cookies['user_id'];
@@ -123,7 +121,6 @@ app.post("/logout", (req, res) => {
   res.clearCookie("user_id", templateVars);
   res.redirect("/urls");
 });
-
 
 //takes in info from registration input, renders to register.ejs
 app.get("/register", (req, res) => {
@@ -161,6 +158,7 @@ app.post("/register", (req, res) => {
   }
 });
 
+//!!! MAY BE AFFECTED !!!
 //takes in info from registration input, renders to register.ejs
 app.get("/urls", (req, res) => {
   const userID = req.cookies['user_id'];
@@ -171,7 +169,7 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
-//
+////!!! MAY BE AFFECTED !!!
 app.post("/urls", (req, res) => {
   let longURL = req.body["longURL"];
   let shortURL = generateRandomString();
@@ -179,19 +177,28 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${shortURL}`);
 });
 
+//!!! MAY BE AFFECTED !!!
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
   res.redirect(longURL);
 });
 
+//!!! MAY BE AFFECTED !!!
 app.get("/urls/new", (req, res) => {
   const userID = req.cookies['user_id'];
-  const templateVars = {
+  if(!userID) {
+    //reroute to login page
+    res.redirect('/login');
+  } else {
+      const templateVars = {
     user: users[userID],
   };
   res.render("urls_new", templateVars);
+  }
+
 });
 
+//!!! MAY BE AFFECTED !!!
 app.get("/urls/:shortURL", (req, res) => {
   const userID = req.cookies['user_id'];
   const templateVars = {
@@ -202,10 +209,7 @@ app.get("/urls/:shortURL", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
-
+//!!! MAY BE AFFECTED !!!
 app.post('/urls/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
   const longURLContent = req.body.longURLContent;
@@ -213,11 +217,15 @@ app.post('/urls/:shortURL', (req, res) => {
   res.redirect('/urls');
 });
 
+//!!! MAY BE AFFECTED !!! <worked>
 app.post("/urls/:shortURL/delete", (req, res) => {
   delete urlDatabase[req.params.shortURL];
   res.redirect("/urls");
 });
 
+app.get("/hello", (req, res) => {
+  res.send("<html><body>Hello <b>World</b></body></html>\n");
+});
 
 
 app.listen(PORT, () => {
