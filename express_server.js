@@ -30,14 +30,14 @@ const users = {
 };
 
 //HELPER FUNCTIONS
-function generateRandomString() {
+const generateRandomString = () => {
   let result = "";
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   for (let i = 0; i < 6; i++) {
     result += characters.charAt(Math.floor(Math.random() * characters.length));
   }
   return result;
-}
+};
 
 const updateUrlDatabase = (shortURL, content) => {
   urlDatabase[shortURL] = content;
@@ -68,7 +68,7 @@ const findUserID = (email, password) => {
   // if not found return false
   return false;
   
-}
+};
 
 
 //END POINTS OR ROUTES
@@ -80,10 +80,10 @@ app.get("/", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-  userID = req.cookies['user_id']
+  const userID = req.cookies['user_id'];
   const templateVars = {
     user: users[userID],
-  }
+  };
   res.render("login", templateVars);
 });
 
@@ -93,22 +93,22 @@ app.post("/login", (req, res) => {
   const foundEmail = findUserByEmail(email);
   const foundUser = findUserID(email, password);
   
-  if(foundEmail && !foundUser) {
-    res.status(403).send('Email found. Password incorrect.')
+  if (foundEmail && !foundUser) {
+    res.status(403).send('Email found. Password incorrect.');
   } else if (!foundEmail) {
-    res.status(403).send('Email not found. Register please.')
+    res.status(403).send('Email not found. Register please.');
   }
 
-  if(!foundUser) {
-    res.status(403).send('Not listed. Register please.')
+  if (!foundUser) {
+    res.status(403).send('Not listed. Register please.');
   }
 
-  for(let userID in users) {
+  for (let userID in users) {
     const userDbEmail = users[userID].email;
-    if( userDbEmail === email) {
+    if (userDbEmail === email) {
       res.cookie('user_id',userID);
     }
-   }
+  }
   res.redirect("/urls");
 });
 
@@ -116,10 +116,10 @@ app.post("/login", (req, res) => {
 
 //deletes email cookie
 app.post("/logout", (req, res) => {
-  userID = req.cookies['user_id']
+  const userID = req.cookies['user_id'];
   const templateVars = {
     user: users[userID],
-  }
+  };
   res.clearCookie("user_id", templateVars);
   res.redirect("/urls");
 });
@@ -127,10 +127,10 @@ app.post("/logout", (req, res) => {
 
 //takes in info from registration input, renders to register.ejs
 app.get("/register", (req, res) => {
-  userID = req.cookies['user_id']
+  const userID = req.cookies['user_id'];
   const templateVars = {
     user: users[userID],
-  }
+  };
   res.render("register", templateVars);
 });
 
@@ -141,7 +141,7 @@ app.post("/register", (req, res) => {
   const foundUser = findUserByEmail(email);
 
   if (foundUser) {
-    res.status(400).send('Email already registered. Log in please!')
+    res.status(400).send('Email already registered. Log in please!');
     //console.log(users);
   }
 
@@ -153,17 +153,17 @@ app.post("/register", (req, res) => {
       password
     };
     //console.log(users);
-    res.cookie("user_id", id)
+    res.cookie("user_id", id);
     res.redirect("/urls");
   } else {
     //console.log(users);
-    res.status(400).send('Please input an email address')
+    res.status(400).send('Please input an email address');
   }
 });
 
 //takes in info from registration input, renders to register.ejs
 app.get("/urls", (req, res) => {
-  userID = req.cookies['user_id']
+  const userID = req.cookies['user_id'];
   const templateVars = {
     urls: urlDatabase,
     user: users[userID]
@@ -185,15 +185,15 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  userID = req.cookies['user_id']
+  const userID = req.cookies['user_id'];
   const templateVars = {
     user: users[userID],
-  }
+  };
   res.render("urls_new", templateVars);
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  userID = req.cookies['user_id']
+  const userID = req.cookies['user_id'];
   const templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL],
