@@ -81,10 +81,10 @@ const getUserByUrl = (shortURL) => {
   }
  };
 
-const findUserByEmail = (email) => {
-  for (let user in users) {
-    const userObj = users[user];
-
+//used in POST /register && POST /login
+const findUserByEmail = (email, database) => {
+  for (let user in database) {
+    const userObj = database[user];
     if (userObj.email === email) {
       // if found return the user
       return userObj;
@@ -126,7 +126,7 @@ app.get("/login", (req, res) => {
 //collects info from login bar, sets email cookie
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
-  const foundEmail = findUserByEmail(email);
+  const foundEmail = findUserByEmail(email, users);
   const foundUser = findUserID(email, password);
 
   if (foundEmail && !foundUser) {
@@ -178,7 +178,7 @@ app.get("/register", (req, res) => {
 //New user - registers ID, sets cookie, adds to database
 app.post("/register", (req, res) => {
   const { email, password } = req.body;
-  const foundUser = findUserByEmail(email);
+  const foundUser = findUserByEmail(email, users);
   const foundUserObj = findUserID(email, password);
 
   if (foundUser) {
@@ -203,7 +203,6 @@ app.post("/register", (req, res) => {
   }
 });
 
-//!!! MAY BE AFFECTED !!! <working>
 //takes in info from registration input, renders to register.ejs
 app.get("/urls", (req, res) => {
   const userID = req.session['user_id'];//JUST CHANGED FROM req.cookie
@@ -227,7 +226,7 @@ app.get('/urls.json', (req, res) => {
   res.json(urlDatabase);
 });
 
-////!!! MAY BE AFFECTED !!! 
+
 //ROUTE /urls to /urls/${shortURL}. Updates database.
 app.post("/urls", (req, res) => {
   const userID = req.session['user_id'];//JUST CHANGED FROM req.cookie
@@ -246,7 +245,6 @@ app.post("/urls", (req, res) => {
   }
 });
 
-//!!! MAY BE AFFECTED !!!
 //ROUTE to external website using longURL link!!
 app.get("/u/:shortURL", (req, res) => {
   const userID = req.session['user_id'];//JUST CHANGED FROM req.cookie
@@ -255,7 +253,6 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(longURL);
 });
 
-//!!! MAY BE AFFECTED !!!
 //determines access to urls/new (if no, reroute)
 // hangs onto user id for header, renders to register.ejs
 app.get("/urls/new", (req, res) => {
@@ -294,7 +291,7 @@ app.get("/urls/:shortURL", (req, res) => {
 }
 });
 
-//!!! MAY BE AFFECTED !!!
+
 //ROUTE urls/:shortURL to /urls.
 app.post('/urls/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
