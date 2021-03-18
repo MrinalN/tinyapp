@@ -90,9 +90,7 @@ const findUserByEmail = (email) => {
 const findUserID = (email, password) => {
   for (let user in users) {
     const userObj = users[user];
-
-    if (userObj.email === email && userObj.password === password) {
-      // if found return the user
+    if (userObj.email === email && bcrypt.compareSync(password, userObj.password)) {
       return userObj;
     }
   }
@@ -167,13 +165,14 @@ app.get("/register", (req, res) => {
 app.post("/register", (req, res) => {
   const { email, password } = req.body;
   const foundUser = findUserByEmail(email);
+  const foundUserObj = findUserID(email, password);
 
   if (foundUser) {
     res.status(400).send('Email already registered. Log in please!');
     //console.log(users);
   }
 
-  if (email && password && !foundUser) {
+  if (foundUserObj !== undefined && !foundUser) {
     const id = generateRandomString();
     users[id] = {
       id,
