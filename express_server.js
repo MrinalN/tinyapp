@@ -149,6 +149,8 @@ app.post("/logout", (req, res) => {
   };
   res.clearCookie("user_id", templateVars);
   res.redirect("/urls");
+  console.log(userID)
+  console.log(users)//testing
 });
 
 //takes in info from registration input, renders to register.ejs
