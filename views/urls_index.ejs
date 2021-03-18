@@ -27,31 +27,14 @@
         </tr>
       </thead>
       <tbody>
-        <% if(!urlsDB) { %>
-          <p>These URLs do not belong to you</p>
-          <tr>
-            <td>
-              <%= shortURL %>
-            </td>
-            <td>
-              <%= urlsDB[shortURL].longURL %>
-            </td>
-            <td>
-              Can't Edit
-            </td>
-            <td>
-              Can't Delete
-            </td>
-          </tr>
-          <% } %>
 
-        <% for(let shortURL in urlsDB) { %>
+        <% for(let shortURL in userDB) { %>
           <tr>
             <td>
               <%= shortURL %>
             </td>
             <td>
-              <%= urlsDB[shortURL].longURL %>
+              <%= userDB[shortURL].longURL %>
             </td>
             <td>
               <form method="GET" action="/urls/<%= shortURL %>">
@@ -69,8 +52,12 @@
             </td>
           </tr>
           <% } %>
+  
       </tbody>
     </table>
+    <div>
+    <p>...........Now Create a New URL...........</p>
+  </div>
   </main>
   <!-- Bootstrap JS -->
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"

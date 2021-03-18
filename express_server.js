@@ -54,12 +54,20 @@ const updateUrlDatabase = (shortURL, content, id) => {
 };
 
 const urlsForUser = (id) => {
+  let userObj = {};
   for (let shortURL in urlDatabase) {
+    
     if (urlDatabase[shortURL].userID === id) {
-      return urlDatabase[shortURL].longURL
+      userObj[shortURL] = urlDatabase[shortURL]
+ 
+        // longURL: urlDatabase[shortURL].longURL,
+        // userID: id
+
+      
     }
-  } 
-  return false;
+    
+  }
+ return userObj
   //if urlsDatabse userID === logged in userID
   //return their urls 
 
@@ -192,6 +200,7 @@ app.get("/urls", (req, res) => {
     res.redirect('/login');
   } else {
     const userDB = urlsForUser(userID);
+    console.log(userDB)
     const templateVars = {
       userDB,
       urlsDB: urlDatabase,
@@ -277,3 +286,26 @@ app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
+
+
+
+
+// <!-- <% if(!userDB) { %>
+//   <p>These URLs do not belong to you</p>
+//   <tr>
+//     <td>
+//       <% for (let id in urlsDB) { %>
+//       <%= urlsDB[id] %>
+//     </td>
+//     <td>
+//       <%= urlsDB[id].longURL %>
+//     </td>
+//     <% } %>
+//     <td>
+//       Edit 
+//     </td>
+//     <td>
+//       Delete
+//     </td>
+//   </tr>
+//   <% } else {%> -->
