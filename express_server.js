@@ -22,12 +22,12 @@ const users = {
   "userRandomID": {
     id: "userRandomID",
     email: "user@example.com",
-    password: "purple-monkey-dinosaur"
+    password: bcrypt.hashSync("purple-monkey-dinosaur", saltRounds),
   },
   "user2RandomID": {
     id: "user2RandomID",
     email: "user2@example.com",
-    password: "dishwasher-funk"
+    password: bcrypt.hashSync("dishwasher-funk", saltRounds),
   }
 };
 
@@ -178,9 +178,9 @@ app.post("/register", (req, res) => {
     users[id] = {
       id,
       email,
-      password
+      password: bcrypt.hashSync(password, saltRounds)
     };
-    //console.log(users);
+    console.log(users);
     res.cookie("user_id", id);
     res.redirect("/urls");
   } else {
