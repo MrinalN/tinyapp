@@ -186,8 +186,9 @@ app.post("/urls", (req, res) => {
 });
 
 //!!! MAY BE AFFECTED !!!
+//redirects to external website using longURL
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL].longURL;///
+  const longURL = urlDatabase[req.params.shortURL].longURL;///BUG undefined.longURL
   res.redirect(longURL);
 });
 
@@ -207,14 +208,18 @@ app.get("/urls/new", (req, res) => {
 });
 
 //!!! MAY BE AFFECTED !!!
+//data rendered to urls_show.ejs
 app.get("/urls/:shortURL", (req, res) => {
   const userID = req.cookies['user_id'];
+  console.log(urlDatabase)
   const templateVars = {
     shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL].longURL,
+    //longURL: urlDatabase[req.params.shortURL].longURL,// BUG undefined.longURL atm
     user: users[userID]
   };
+  //console.log(templateVars[longURL])
   res.render("urls_show", templateVars);
+  //value="<%= longURL %> ">
 });
 
 //!!! MAY BE AFFECTED !!!
