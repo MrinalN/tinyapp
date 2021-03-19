@@ -100,10 +100,14 @@ const formatLongUrl = (longUrl) => {
   }
 };
 
+//* findUserByEmail function exported to helpers.js
 
 
 ///////////END POINTS OR ROUTES///////////
 
+app.get("/", (req, res) => {
+  res.redirect("/urls");
+});
 
 ////-- User Authentication --////
 
@@ -297,20 +301,16 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   }
 });
 
-//Tester//
-app.get('/urls.json', (req, res) => {
-  res.json(urlDatabase);
-});
 
-
-////-- Navigation Starter Pack --////
-
-app.get("/", (req, res) => {
-  res.redirect("/urls");
-});
+////-- Build tools --////
 
 app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
+});
+
+//Tester//
+app.get('/urls.json', (req, res) => {
+  res.json(urlDatabase);
 });
 
 

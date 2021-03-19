@@ -4,7 +4,7 @@ const findUserByEmail = (email, database) => {
   for (let user in database) {
     const userObj = database[user];
     if (userObj.email === email) {
-      // if found return the user
+      // if found return the user. Formatted like full user database.
       return userObj;
     }
   }
