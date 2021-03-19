@@ -105,10 +105,10 @@ const formatLongUrl = (longUrl) => {
 
 app.get("/", (req, res) => {
   const userID = req.session['user_id'];
-  if (userID) {
-  res.redirect("/urls");
+  if (!userID) {
+    res.redirect("/login");
   }
-  res.redirect("/login");
+  res.redirect("/urls");
 });
 
 ////-- User Authentication --////
@@ -121,8 +121,8 @@ app.get("/login", (req, res) => {
       user: users[userID],
     };
     res.render("login", templateVars);
-  } else {
-    res.redirect("/urls");
+  } else{
+  res.redirect("/urls");
   }
 });
 
@@ -133,7 +133,6 @@ app.post("/login", (req, res) => {
   const foundUser = findUserID(email, password);
 
   if (foundEmail && !foundUser) {
-    res.status(401);
     res.render('error_login_password');
   } else if (!foundEmail) {
     res.status(403);
@@ -142,7 +141,6 @@ app.post("/login", (req, res) => {
   }
 
   if (!foundUser) {
-    res.status(403);
     res.render('error_login_new')
     //res.status(403).send('Not listed. Register please.');
   }
@@ -175,13 +173,15 @@ app.post("/register", (req, res) => {
   const { email, password } = req.body;
   const foundUser = findUserByEmail(email, users);
   const foundUserObj = findUserID(email, password);
-
-  if (foundUser) {
-    res.status(400);
-    res.render('error_login_password');
+  const templateVars = {
+    user: null,
   }
 
-  if (foundUserObj !== undefined && !foundUser) {
+  if(email === "" || password === "") {
+    res.render('invalid_credentials', templateVars);
+  } else if (foundUser) {
+    res.render('existing_user_error', templateVars);
+  } else {
     const id = generateRandomString();
     users[id] = {
       id,
@@ -190,9 +190,6 @@ app.post("/register", (req, res) => {
     };
     req.session['user_id'] = id;
     res.redirect("/urls");
-  } else {
-    res.status(400);
-    res.render('error_login_password');
   }
 });
 
@@ -209,9 +206,9 @@ app.post("/logout", (req, res) => {
 //Renders url input, usersDB memory and id to register.ejs
 app.get("/urls", (req, res) => {
   const userID = req.session['user_id'];
+  const templateVars = {user: userID}
   if (!userID) {
-    //message on login page
-    res.redirect('/login');
+      res.render("error_urls", templateVars);
   } else {
     const userDB = urlsForUser(userID);
     const templateVars = {
@@ -227,10 +224,10 @@ app.get("/urls", (req, res) => {
 app.post("/urls", (req, res) => {
   const userID = req.session['user_id'];
   if (!userID) {
-    //message on login page
-    res.redirect('/login');
+    res.status(401);
+    res.redirect('/login');//HTML
   } else {
-    let inputURL = req.body["longURL"];
+     let inputURL = req.body["longURL"];
     let shortURL = generateRandomString();
 
     //BONUS http:// glitch addressed
@@ -245,7 +242,7 @@ app.post("/urls", (req, res) => {
 app.get("/urls/new", (req, res) => {
   const userID = req.session['user_id'];
   if (!userID) {
-    res.redirect('/login');
+    res.redirect('/login'); 
   } else {
     const templateVars = {
       user: users[userID],
@@ -259,9 +256,8 @@ app.get("/u/:shortURL", (req, res) => {
   if (urlDatabase[req.params.shortURL]) {
     const longURL = urlDatabase[req.params.shortURL].longURL;
     res.redirect(longURL);
-  } else {
-    res.redirect('/urls');
   }
+    res.redirect('/urls');
 });
 
 //Renders user data to urls_show.ejs. Conditions.
@@ -269,9 +265,9 @@ app.get("/urls/:shortURL", (req, res) => {
   const userID = req.session['user_id'];
   const user = getUserByUrl(req.params.shortURL);
   if (!userID) {
-    res.status(401).send('Custom short URL accessible post login');
+    res.status(401).send('Custom short URL accessible post login');//HTML
   } else if (user === undefined || user !== userID) {
-    res.status(401).send('Woops! This url feature isn\'t accessible to you!');
+    res.status(401).send('Woops! This url feature isn\'t accessible to you!');//HTML
   } else {
     const templateVars = {
       shortURL: req.params.shortURL,
@@ -292,7 +288,7 @@ app.post('/urls/:shortURL', (req, res) => {
     //message on login page
     res.redirect('/login');
   } else if (user === undefined || user !== userID) {
-    res.status(401).send('No access! Doesn\'t Belong To You!');
+    res.status(401).send('No access! Doesn\'t Belong To You!');//HTML
   } else {
     updateUrlDatabase(shortURL, longURLContent, userID);
     res.redirect('/urls');
