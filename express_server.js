@@ -104,7 +104,11 @@ const formatLongUrl = (longUrl) => {
 ///////////END POINTS OR ROUTES///////////
 
 app.get("/", (req, res) => {
+  const userID = req.session['user_id'];
+  if (userID) {
   res.redirect("/urls");
+  }
+  res.redirect("/login");
 });
 
 ////-- User Authentication --////
@@ -129,13 +133,18 @@ app.post("/login", (req, res) => {
   const foundUser = findUserID(email, password);
 
   if (foundEmail && !foundUser) {
-    res.status(403).send('Email found. Password incorrect.');
+    res.status(401);
+    res.render('error_login_password');
   } else if (!foundEmail) {
-    res.status(403).send('Email not found. Register please.');
+    res.status(403);
+    res.render('error_login_new')
+    //res.status(403).send('Email not found. Register please.');
   }
 
   if (!foundUser) {
-    res.status(403).send('Not listed. Register please.');
+    res.status(403);
+    res.render('error_login_new')
+    //res.status(403).send('Not listed. Register please.');
   }
 
   for (let userID in users) {
@@ -168,7 +177,8 @@ app.post("/register", (req, res) => {
   const foundUserObj = findUserID(email, password);
 
   if (foundUser) {
-    res.status(400).send('Email already registered. Log in please!');
+    res.status(400);
+    res.render('error_login_password');
   }
 
   if (foundUserObj !== undefined && !foundUser) {
@@ -181,7 +191,8 @@ app.post("/register", (req, res) => {
     req.session['user_id'] = id;
     res.redirect("/urls");
   } else {
-    res.status(400).send('Please input an email address');
+    res.status(400);
+    res.render('error_login_password');
   }
 });
 
@@ -302,19 +313,6 @@ app.post("/urls/:shortURL/delete", (req, res) => {
     res.redirect("/urls");
   }
 });
-
-
-////-- Build tools --////
-
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
-
-//Tester//
-app.get('/urls.json', (req, res) => {
-  res.json(urlDatabase);
-});
-
 
 
 app.listen(PORT, () => {
