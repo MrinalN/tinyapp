@@ -1,4 +1,4 @@
-let users = require('./express_server');
+
 //used in POST /register && POST /login
 const findUserByEmail = (email, database) => {
   for (let user in database) {
