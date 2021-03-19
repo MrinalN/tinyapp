@@ -1,7 +1,7 @@
+const findUserByEmail = require('./helpers.js').findUserByEmail;
 const express = require("express");
 const bodyParser = require("body-parser");
 const cookieSession = require('cookie-session');
-const findUserByEmail = require('./helpers.js').findUserByEmail;
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 
@@ -221,7 +221,7 @@ app.post("/urls", (req, res) => {
   } else {
     let inputURL = req.body["longURL"];
     let shortURL = generateRandomString();
-    
+
     //BONUS http:// glitch addressed
     const longURL = formatLongUrl(inputURL);
 
@@ -243,10 +243,14 @@ app.get("/urls/new", (req, res) => {
   }
 });
 
-//ROUTE to external website using longURL link
+//ROUTE to external website using longURL link. Else redirect.
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL].longURL;
-  res.redirect(longURL);
+  if (urlDatabase[req.params.shortURL]) {
+    const longURL = urlDatabase[req.params.shortURL].longURL;
+    res.redirect(longURL);
+  } else {
+    res.redirect('/urls');
+  }
 });
 
 //Renders user data to urls_show.ejs. Conditions.
