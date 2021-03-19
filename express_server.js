@@ -52,13 +52,11 @@ const generateRandomString = () => {
 
 //used in /urls/:shortURL POST
 const updateUrlDatabase = (shortURL, content, id) => {
-
   urlDatabase[shortURL] = {
     shortURL,
     longURL: content,
     userID: id
   };
-  //does it need if conditional if duplicate? <not working>
 };
 
 //updates a custom user database
@@ -124,7 +122,7 @@ app.get("/login", (req, res) => {
   }
 });
 
-//Authenicates login. Conditions.
+//Authenicates login. Cookies id(email). Conditions.
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
   const foundEmail = findUserByEmail(email, users);
@@ -149,7 +147,7 @@ app.post("/login", (req, res) => {
   res.redirect("/urls");
 });
 
-//Cookies registration input, renders to register.ejs. Conditions.
+//Renders new user id to register.ejs. Conditions.
 app.get("/register", (req, res) => {
   const userID = req.session['user_id'];
   if (!userID) {
@@ -197,7 +195,7 @@ app.post("/logout", (req, res) => {
 
 ////-- Url Management --////
 
-//Renders registration input to register.ejs
+//Renders url input, usersDB memory and id to register.ejs
 app.get("/urls", (req, res) => {
   const userID = req.session['user_id'];
   if (!userID) {
@@ -214,7 +212,7 @@ app.get("/urls", (req, res) => {
   }
 });
 
-//ROUTE /urls to /urls/${shortURL}. Updates database.
+//ROUTE /urls to /urls/${shortURL}. Updates database. 
 app.post("/urls", (req, res) => {
   const userID = req.session['user_id'];
   if (!userID) {
@@ -223,11 +221,11 @@ app.post("/urls", (req, res) => {
   } else {
     let inputURL = req.body["longURL"];
     let shortURL = generateRandomString();
-
+    
+    //BONUS http:// glitch addressed
     const longURL = formatLongUrl(inputURL);
 
     updateUrlDatabase(shortURL, longURL, userID);
-
     res.redirect(`/urls/${shortURL}`);
   }
 });
@@ -312,6 +310,7 @@ app.get("/hello", (req, res) => {
 app.get('/urls.json', (req, res) => {
   res.json(urlDatabase);
 });
+
 
 
 app.listen(PORT, () => {
