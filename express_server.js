@@ -17,8 +17,16 @@ app.set("view engine", "ejs");
 
 //////////////IN MEMORY//////////////
 const urlDatabase = {
-  "b2xVn2": { longURL: "http://www.lighthouselabs.ca", userID: "userRandomID" },
-  "9sm5xK": { longURL: "http://www.google.com", userID: "userRandomID" }
+  "b2xVn2": {
+    shortURL: "b2xVn2",
+    longURL: "http://www.lighthouselabs.ca",
+    userID: "userRandomID"
+  },
+  "9sm5xK": {
+    shortURL: "9sm5xK",
+    longURL: "http://www.google.com",
+    userID: "userRandomID"
+  }
 };
 const users = {
   "userRandomID": {
@@ -54,7 +62,7 @@ const updateUrlDatabase = (shortURL, content, id) => {
 
 //updates a custom user database
 const urlsForUser = (id) => {
-  let userObj = {};
+  let userObj= {};
   for (let shortURL in urlDatabase) {
     if (urlDatabase[shortURL].userID === id) {
       userObj[shortURL] = urlDatabase[shortURL];
@@ -78,7 +86,6 @@ const findUserID = (email, password) => {
       return userObj;
     }
   }
-  return false;
 };
 
 //resolves the http:// required for correct offsite redirection
@@ -218,13 +225,13 @@ app.get("/urls/new", (req, res) => {
 
 });
 
-// u/:id - GET routes to external website using longURL link ////GET HELP
+// u/:id GET - verifies and routes to external website using longURL link
 app.get("/u/:shortURL", (req, res) => {
-  const userID = req.session['user_id'];
-  const userURL = getUserByUrl(req.params.shortURL);
   const longURL = urlDatabase[req.params.shortURL].longURL;
-  if (userURL !== userID) {
-    return res.render("error_urls", { errorMessage: 'Woops! This url already exists.' });
+  console.log(longURL)
+  // If the retrieved longURL is undefined, go to the "url not found" page.
+  if (!longURL) {
+    res.render("error_urls", { errorMessage: 'Woops! This url is not in our database.' });
   }
   res.redirect(longURL);
 });
