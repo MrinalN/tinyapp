@@ -14,6 +14,7 @@ app.use(
 );
 app.use(bodyParser.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
+
 //////////////IN MEMORY//////////////
 const urlDatabase = {
   "b2xVn2": { longURL: "http://www.lighthouselabs.ca", userID: "userRandomID" },
@@ -31,6 +32,7 @@ const users = {
     password: bcrypt.hashSync("dishwasher-funk", saltRounds),
   }
 };
+
 /////////////HELPER FUNCTIONS/////////////
 const generateRandomString = () => {
   let result = "";
@@ -60,6 +62,7 @@ const urlsForUser = (id) => {
   }
   return userObj;
 };
+
 const getUserByUrl = (shortURL) => {
   for (let url in urlDatabase) {
     if (url === shortURL) {
@@ -67,6 +70,7 @@ const getUserByUrl = (shortURL) => {
     }
   }
 };
+
 const findUserID = (email, password) => {
   for (let user in users) {
     const userObj = users[user];
@@ -76,6 +80,7 @@ const findUserID = (email, password) => {
   }
   return false;
 };
+
 //resolves the http:// required for correct offsite redirection
 const formatLongUrl = (longUrl) => {
   let reg = /^((http|https|ftp):\/\/)/;
@@ -85,26 +90,27 @@ const formatLongUrl = (longUrl) => {
     return longUrl;
   }
 };
+
 //* findUserByEmail function exported to helpers.js
+
+
 ///////////END POINTS OR ROUTES///////////
 app.get("/", (req, res) => {
   res.redirect("/urls");
 });
+
 ////-- User Authentication --////
-//Sets userID cookie. Renders to login.ejs. Conditions.
+
+//Login GET - checks if logged in
 app.get("/login", (req, res) => {
   const userID = req.session['user_id'];
-  if (!userID) {
-    const templateVars = {
-      user: users[userID],
-    };
-    res.render("login", templateVars);
-  } else {
-    res.redirect("/urls");
+  if (userID) {
+    return res.redirect("/urls");
   }
+  res.render("login", { user: undefined });
 });
 
-//Authenicates login. Cookies id(email). Conditions.
+//Login POST - authentication.
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
   const foundEmail = findUserByEmail(email, users);
@@ -118,6 +124,7 @@ app.post("/login", (req, res) => {
   if (!foundUser) {
     return res.render("error_login_new", templateVars)
   }
+  //if user aunthenticated, checks database for duplicate
   for (let userID in users) {
     const userDbEmail = users[userID].email;
     if (userDbEmail === email) {
@@ -127,20 +134,16 @@ app.post("/login", (req, res) => {
   res.redirect("/urls");
 });
 
-//Renders new user id to register.ejs. Conditions.
+//Register GET - checks if logged in
 app.get("/register", (req, res) => {
   const userID = req.session['user_id'];
-  if (!userID) {
-    const templateVars = {
-      user: users[userID],
-    };
-    res.render("register", templateVars);
-  } else {
-    res.redirect("/urls");
+  if (userID) {
+    return res.redirect("/urls");
   }
+  res.render("register", { user: undefined });
 });
 
-//registration id authenticated. Conditions
+//Register POST - id authenticated. Conditions
 app.post("/register", (req, res) => {
   const { email, password } = req.body;
   const foundUser = findUserByEmail(email, users);
@@ -160,7 +163,6 @@ app.post("/register", (req, res) => {
   };
   req.session['user_id'] = id;
   res.redirect("/urls");
-
 });
 
 //deletes userID cookie
@@ -169,67 +171,72 @@ app.post("/logout", (req, res) => {
   res.redirect('/urls');
 });
 
+
 ////-- Url Management --////
 
-//Renders url input, usersDB memory and id to register.ejs
+//urls GET - Renders url input, usersDB memory and id to register.ejs
 app.get("/urls", (req, res) => {
   const userID = req.session['user_id'];
   if (!userID) {
-    //message on login page
-    res.redirect('/login');
-  } else {
-    const userDB = urlsForUser(userID);
-    const templateVars = {
-      userDB,
-      urlsDB: urlDatabase,
-      user: users[userID]
-    };
-    res.render("urls_index", templateVars);
+    return res.redirect('/login');
   }
+  const userDB = urlsForUser(userID);
+  const templateVars = {
+    userDB,
+    urlsDB: urlDatabase,
+    user: users[userID]
+  };
+  res.render("urls_index", templateVars);
 });
 
-//ROUTE /urls to /urls/${shortURL}. Updates database. 
+//urls POST - routes to /urls/${shortURL}. Updates database. 
 app.post("/urls", (req, res) => {
   const userID = req.session['user_id'];
   if (!userID) {
-    //message on login page
-    res.redirect('/login');
-  } else {
-    let inputURL = req.body["longURL"];
-    let shortURL = generateRandomString();
-
-    //BONUS http:// glitch addressed
-    const longURL = formatLongUrl(inputURL);
-
-    updateUrlDatabase(shortURL, longURL, userID);
-    res.redirect(`/urls/${shortURL}`);
+    return res.render("error_urls", { errorMessage: 'Login to access this page!' });
   }
+  const inputURL = req.body["longURL"];
+  let shortURL = generateRandomString();
+
+  //BONUS http:// glitch addressed
+  const longURL = formatLongUrl(inputURL);
+
+  updateUrlDatabase(shortURL, longURL, userID);
+  res.redirect(`/urls/${shortURL}`);
 });
-// Renders user id to register.ejs
+
+// urls/new GET - Renders user id to register.ejs
 app.get("/urls/new", (req, res) => {
   const userID = req.session['user_id'];
   if (!userID) {
-    res.redirect('/login');
-  } else {
-    const templateVars = {
-      user: users[userID],
-    };
-    res.render("urls_new", templateVars);
+    return res.redirect('/login');
   }
+  const templateVars = {
+    user: users[userID],
+  };
+  res.render("urls_new", templateVars);
+
 });
-//ROUTE to external website using longURL link
+
+// u/:id - GET routes to external website using longURL link ////GET HELP
 app.get("/u/:shortURL", (req, res) => {
+  const userID = req.session['user_id'];
+  const userURL = getUserByUrl(req.params.shortURL);
   const longURL = urlDatabase[req.params.shortURL].longURL;
+  if (userURL !== userID) {
+    return res.render("error_urls", { errorMessage: 'Woops! This url already exists.' });
+  }
   res.redirect(longURL);
 });
-//Renders user data to urls_show.ejs. Conditions.
+
+// urls/:id - GET Renders user data to urls_show.ejs. Conditions.
 app.get("/urls/:shortURL", (req, res) => {
   const userID = req.session['user_id'];
-  const user = getUserByUrl(req.params.shortURL);
+  const userURL = getUserByUrl(req.params.shortURL);
   if (!userID) {
-    res.status(401).send('Custom short URL accessible post login');
-  } else if (user === undefined || user !== userID) {
-    res.status(401).send('Woops! This url feature isn\'t accessible to you!');
+    return res.render("error_urls", { errorMessage: 'Login to access this page!' });
+  } else if (userURL !== userID) {
+    return res.render("error_urls", { errorMessage: 'Woops! This is not your url. No access.' });
   } else {
     const templateVars = {
       shortURL: req.params.shortURL,
@@ -239,36 +246,39 @@ app.get("/urls/:shortURL", (req, res) => {
     res.render("urls_show", templateVars);
   }
 });
-//ROUTE urls/:shortURL to /urls. Conditions.
+
+// urls/:id POST - routes to /urls. Conditions.
 app.post('/urls/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
   const longURLContent = req.body.longURLContent;
   const userID = req.session['user_id'];
-  const user = getUserByUrl(shortURL);
+  const userURL = getUserByUrl(shortURL);
   if (!userID) {
     //message on login page
     res.redirect('/login');
-  } else if (user === undefined || user !== userID) {
-    res.status(401).send('No access! Doesn\'t Belong To You!');
+  } else if (userURL !== userID) {
+    return res.render("error_urls", { errorMessage: 'Woops! This is not your url. No access.' });
   } else {
     updateUrlDatabase(shortURL, longURLContent, userID);
     res.redirect('/urls');
   }
 });
-//deletes url from database. Routes back to /urls
+
+//urls/:id/delete
 app.post("/urls/:shortURL/delete", (req, res) => {
   const userID = req.session['user_id'];
   const user = getUserByUrl(req.params.shortURL);
   if (!userID) {
     //message on login page
     res.redirect('/login');
-  } else if (user === undefined || user !== userID) {
-    res.status(401).send('No access! Feature reserved for registered user.');
+  } else if (user !== userID) {
+    return res.render("error_urls", { errorMessage: 'No access! Feature reserved for registered user.' });
   } else {
     delete urlDatabase[req.params.shortURL];
     res.redirect("/urls");
   }
 });
+
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
