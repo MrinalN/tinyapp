@@ -133,10 +133,10 @@ app.post("/login", (req, res) => {
   const foundUser = findUserID(email, password);
 
   if (foundEmail && !foundUser) {
-    res.render('error_login_password');
+    res.render('error_login_password', {user: null});
   } else if (!foundEmail) {
     res.status(403);
-    res.render('error_login_new')
+    res.render('error_login_new', {user: null})
     //res.status(403).send('Email not found. Register please.');
   }
 
@@ -180,7 +180,7 @@ app.post("/register", (req, res) => {
   if(email === "" || password === "") {
     res.render('invalid_credentials', templateVars);
   } else if (foundUser) {
-    res.render('existing_user_error', templateVars);
+    res.render('error_existing_user', templateVars);
   } else {
     const id = generateRandomString();
     users[id] = {
@@ -206,7 +206,9 @@ app.post("/logout", (req, res) => {
 //Renders url input, usersDB memory and id to register.ejs
 app.get("/urls", (req, res) => {
   const userID = req.session['user_id'];
-  const templateVars = {user: userID}
+  const templateVars = {
+    user: userID,
+    errorMessage: "Login or register to access this page."}
   if (!userID) {
       res.render("error_urls", templateVars);
   } else {
@@ -265,9 +267,15 @@ app.get("/urls/:shortURL", (req, res) => {
   const userID = req.session['user_id'];
   const user = getUserByUrl(req.params.shortURL);
   if (!userID) {
-    res.status(401).send('Custom short URL accessible post login');//HTML
+    res.render("error_urls", {
+      user:userID,
+      errorMessage: 'Custom short URL accessible post login'
+    })
   } else if (user === undefined || user !== userID) {
-    res.status(401).send('Woops! This url feature isn\'t accessible to you!');//HTML
+    res.render("error_urls", {
+      user:userID,
+      errorMessage:'Woops! This url feature isn\'t accessible to you!'
+    })
   } else {
     const templateVars = {
       shortURL: req.params.shortURL,
@@ -288,7 +296,10 @@ app.post('/urls/:shortURL', (req, res) => {
     //message on login page
     res.redirect('/login');
   } else if (user === undefined || user !== userID) {
-    res.status(401).send('No access! Doesn\'t Belong To You!');//HTML
+    res.render("error_urls", {
+      user:userID,
+      errorMessage:'Woops! This url feature isn\'t accessible to you!'
+    });//HTML
   } else {
     updateUrlDatabase(shortURL, longURLContent, userID);
     res.redirect('/urls');
@@ -303,7 +314,10 @@ app.post("/urls/:shortURL/delete", (req, res) => {
     //message on login page
     res.redirect('/login');
   } else if (user === undefined || user !== userID) {
-    res.status(401).send('No access! Feature reserved for registered user.');
+    res.render("error_urls", {
+      user:userID,
+      errorMessage:'Woops! This url feature isn\'t accessible to you!'
+    });
   } else {
     delete urlDatabase[req.params.shortURL];
     res.redirect("/urls");

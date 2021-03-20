@@ -12,7 +12,25 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
     </div>
-    <% if (user) { %>
+    <% if (user === null || !user) { %>
+      <form class="form-inline" method="GET" action="/login">
+        <div class="form-group">
+          <button type="submit" class="btn btn-outline-dark">
+            Login
+          </button>
+        </div>
+      </form>
+
+      <h3>||</h3>
+
+      <form class="form-inline" method="GET" action="/register">
+        <div class="form-group">
+          <button type="submit" class="btn btn-outline-dark">
+            Register
+          </button>
+        </div>
+      </form>
+      <% } else { %>
        <span class="navbar-text">
         <a class="nav-item nav-link">Hi, <%= user.email %></a>
       </span>
@@ -24,24 +42,6 @@
             Logout
           </button>
       </form>
-      <% } else { %>
-        <form class="form-inline" method="GET" action="/login">
-          <div class="form-group">
-            <button type="submit" class="btn btn-outline-dark">
-              Login
-            </button>
-          </div>
-        </form>
-
-        <h3>||</h3>
-
-        <form class="form-inline" method="GET" action="/register">
-          <div class="form-group">
-            <button type="submit" class="btn btn-outline-dark">
-              Register
-            </button>
-          </div>
-        </form>
 
         <% } %>
   </nav>
