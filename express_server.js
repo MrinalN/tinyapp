@@ -111,12 +111,12 @@ app.post("/login", (req, res) => {
   const foundUser = findUserID(email, password);
   const templateVars = { errorMessage: "You're new! We don't have you listed." }
   if (foundEmail && !foundUser) {
-    res.render("error_login_password", { errorMessage: "Registered email! Incorrect password..." })
+    return res.render("error_login_password", { errorMessage: "Registered email! Incorrect password..." })
   } else if (!foundEmail) {
-    res.render("error_login_new", templateVars)
+    return res.render("error_login_new", templateVars)
   }
   if (!foundUser) {
-    res.render("error_login_new", templateVars)
+    return res.render("error_login_new", templateVars)
   }
   for (let userID in users) {
     const userDbEmail = users[userID].email;
@@ -144,13 +144,12 @@ app.get("/register", (req, res) => {
 app.post("/register", (req, res) => {
   const { email, password } = req.body;
   const foundUser = findUserByEmail(email, users);
-
   if (foundUser) {
-    res.render("error_login_password", { errorMessage: "We already have you in our database." })
+    return res.render("error_login_password", { errorMessage: "We already have you in our database." })
   }
 
   if (req.body.email === '' || req.body.password === '') {
-    res.render("error_login_new", { errorMessage: 'Please input an valid email address and password.' })
+    return res.render("error_login_new", { errorMessage: 'Please input an valid email address and password.' })
   }
 
   const id = generateRandomString();
@@ -161,6 +160,7 @@ app.post("/register", (req, res) => {
   };
   req.session['user_id'] = id;
   res.redirect("/urls");
+
 });
 
 //deletes userID cookie
@@ -269,16 +269,6 @@ app.post("/urls/:shortURL/delete", (req, res) => {
     res.redirect("/urls");
   }
 });
-////-- Build tools --////
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
-//Tester//
-app.get('/urls.json', (req, res) => {
-  res.json(urlDatabase);
-});
-
-
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
