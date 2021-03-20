@@ -140,7 +140,7 @@ app.get("/register", (req, res) => {
   }
 });
 
-//New user - registers ID, sets cookie, adds to database. Conditions.
+//registration id authenticated. Conditions
 app.post("/register", (req, res) => {
   const { email, password } = req.body;
   const foundUser = findUserByEmail(email, users);
