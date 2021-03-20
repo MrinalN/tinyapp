@@ -62,7 +62,7 @@ const updateUrlDatabase = (shortURL, content, id) => {
 
 //updates a custom user database
 const urlsForUser = (id) => {
-  let userObj= {};
+  let userObj = {};
   for (let shortURL in urlDatabase) {
     if (urlDatabase[shortURL].userID === id) {
       userObj[shortURL] = urlDatabase[shortURL];
@@ -122,14 +122,14 @@ app.post("/login", (req, res) => {
   const { email, password } = req.body;
   const foundEmail = findUserByEmail(email, users);
   const foundUser = findUserID(email, password);
-  const templateVars = { errorMessage: "You're new! We don't have you listed." }
+  const templateVars = { errorMessage: "You're new! We don't have you listed." };
   if (foundEmail && !foundUser) {
-    return res.render("error_login_password", { errorMessage: "Registered email! Incorrect password..." })
+    return res.render("error_login_password", { errorMessage: "Registered email! Incorrect password..." });
   } else if (!foundEmail) {
-    return res.render("error_login_new", templateVars)
+    return res.render("error_login_new", templateVars);
   }
   if (!foundUser) {
-    return res.render("error_login_new", templateVars)
+    return res.render("error_login_new", templateVars);
   }
   //if user aunthenticated, checks database for duplicate
   for (let userID in users) {
@@ -155,11 +155,11 @@ app.post("/register", (req, res) => {
   const { email, password } = req.body;
   const foundUser = findUserByEmail(email, users);
   if (foundUser) {
-    return res.render("error_login_password", { errorMessage: "We already have you in our database." })
+    return res.render("error_login_password", { errorMessage: "We already have you in our database." });
   }
 
   if (req.body.email === '' || req.body.password === '') {
-    return res.render("error_login_new", { errorMessage: 'Please input an valid email address and password.' })
+    return res.render("error_login_new", { errorMessage: 'Please input an valid email address and password.' });
   }
 
   const id = generateRandomString();
@@ -196,7 +196,7 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
-//urls POST - routes to /urls/${shortURL}. Updates database. 
+//urls POST - routes to /urls/${shortURL}. Updates database.
 app.post("/urls", (req, res) => {
   const userID = req.session['user_id'];
   if (!userID) {
@@ -228,7 +228,7 @@ app.get("/urls/new", (req, res) => {
 // u/:id GET - verifies and routes to external website using longURL link
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL].longURL;
-  console.log(longURL)
+  console.log(longURL);
   // If the retrieved longURL is undefined, go to the "url not found" page.
   if (!longURL) {
     res.render("error_urls", { errorMessage: 'Woops! This url is not in our database.' });
